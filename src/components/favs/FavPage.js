@@ -4,6 +4,14 @@ import Card from '../card/Card'
 import {connect} from 'react-redux';
 
 function FavPage({ characters = [0] }) {
+
+    //Local storage check
+    let storage = localStorage.getItem('storage');
+    storage = JSON.parse(storage);
+    if(storage && storage.characters.favorites && !characters.length){
+        characters = storage.characters.favorites;
+    }
+
     function renderCharacter(char, i) {
         return (
             <Card {...char} key={i} hide/>

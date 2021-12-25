@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {updateDB, getFavs} from '../firebase';
 
 //constants
 let initialData = {
@@ -18,9 +19,19 @@ let REMOVE_CHARACTER = "REMOVE_CHARACTER";
 
 let ADD_TO_FAVORITES = "ADD_TO_FAVORITES";
 
+let GET_FAVS = "GET_FAVS";
+let GET_FAVS_SUCCESS = "GET_FAVS_SUCCESS";
+let GET_FAVS_ERROR = "GET_FAVS_ERROR";
+
 //reducer
 export default function reducer(state=initialData, action) {
     switch(action.type) {
+        case GET_FAVS:
+            return {...state, fetching: true}
+        case GET_FAVS_ERROR:
+            return {...state, fetching: false, error: action.payload}
+        case GET_FAVS_SUCCESS:
+            return {...state, fetching: false, favorites: action.payload}
         case ADD_TO_FAVORITES:
             return {...state, ...action.payload}
         case REMOVE_CHARACTER:
@@ -36,13 +47,42 @@ export default function reducer(state=initialData, action) {
     };
 };
 
+//action
+function saveStorageFavorites(storage){
+    localStorage.storage = JSON.stringify(storage);
+};
+
 //actions (thunk)
+
+export let retreiveFavs = () => (dispatch, getState) => {
+    dispatch({
+        type: GET_FAVS,
+    });
+    let {uid} = getState().user;
+    return getFavs(uid)
+        .then(array => {
+            dispatch({
+                type: GET_FAVS_SUCCESS,
+                payload: [...array]
+            });
+            saveStorageFavorites(getState());
+        })
+        .catch( e => {
+            console.log(e);
+            dispatch({
+                type: GET_FAVS_ERROR,
+                payload: e.message
+            })
+        })
+}
 
 export let addToFavoritesAction = () => (dispatch, getState) => {
     let {array, favorites} = getState().characters;
     let char = array.shift();
     favorites.push(char);
-
+    //update to firebase
+    let {uid} = getState().user;
+    updateDB(favorites, uid);
     dispatch({
         type: ADD_TO_FAVORITES,
         payload: {array: [...array], favorites: [...favorites]} 

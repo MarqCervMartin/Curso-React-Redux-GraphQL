@@ -1,5 +1,6 @@
 import { initializeApp} from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import {getFirestore, collection, addDoc, getDocs} from 'firebase/firestore';
 
 let firebaseConfig = {
     apiKey: "AIzaSyA5emfThDVCMKv36dIed69a0TmiMACagC0",
@@ -14,6 +15,30 @@ let firebaseConfig = {
 //Initialize firebase
 initializeApp(firebaseConfig);
 
+//bd
+
+export function getFavs(uid){
+    let db = getFirestore();
+    return getDocs(collection(db, uid))
+        .then(snap => {
+            return snap.data.favoritos
+        })
+}
+
+export function updateDB(array, uid){
+    //let db = getFirestore().collection('favs');
+    let db = getFirestore();
+    try {
+        return addDoc(collection(db, "favs"), {
+            favoritos: {...array}
+        })
+        //return db.doc(uid).set({favoritos: {...array}});
+    } catch (error) {
+        console.log('updateDB Error '+error);
+    }
+};
+
+//auth
 export function signOutGoogle(){
     signOut(getAuth());
 }
