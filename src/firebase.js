@@ -1,6 +1,6 @@
 import { initializeApp} from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
-import {getFirestore, collection, addDoc, getDocs} from 'firebase/firestore';
+import {getFirestore, collection, setDoc, getDocs, doc} from 'firebase/firestore';
 
 let firebaseConfig = {
     apiKey: "AIzaSyA5emfThDVCMKv36dIed69a0TmiMACagC0",
@@ -29,7 +29,7 @@ export function updateDB(array, uid){
     //let db = getFirestore().collection('favs');
     let db = getFirestore();
     try {
-        return addDoc(collection(db, "favs"), {
+        return setDoc(doc(db, "fav", uid), {
             favoritos: {...array}
         })
         //return db.doc(uid).set({favoritos: {...array}});
